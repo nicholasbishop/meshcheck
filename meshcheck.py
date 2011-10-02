@@ -7,7 +7,6 @@ from OpenGL.GL import *
 import json
 import math
 import numpy
-import pprint
 import sys
 
 class Context:
@@ -55,7 +54,7 @@ class Mesh:
     def add_vert(self, name, x, y, z):
         if name in self.verts:
             raise Exception('Duplicate vertex name')
-        self.verts[name] = numpy.array([x, y, z])
+        self.verts[name] = numpy.array([x*1.0, y*1.0, z*1.0])
 
     def add_face(self, name, verts):
         if name in self.faces:
@@ -70,7 +69,8 @@ class Mesh:
         # assuming triangle for now
         v1 = self.verts[v[1]] - self.verts[v[0]]
         v2 = self.verts[v[1]] - self.verts[v[2]]
-        return numpy.cross(v1, v2)
+        n = numpy.cross(v1, v2)
+        return n * (1.0 / numpy.linalg.norm(n))
 
 def load_json_mesh(text):
     mesh = Mesh()
@@ -152,7 +152,19 @@ def draw_background(top_color, bottom_color):
     # clear the depth buffer
     glClear(GL_DEPTH_BUFFER_BIT)
 
-def draw_text(text, loc, color):
+def draw_text_3d(text, loc, color):
+    glDisable(GL_LIGHTING)
+    glPushMatrix()
+    scale = 0.001
+    glScalef(scale, scale, scale)
+    glColor3fv(color)
+    glLineWidth(2)
+    for c in text:
+        glutStrokeCharacter(GLUT_STROKE_ROMAN, ord(c))
+    glPopMatrix()
+    glEnable(GL_LIGHTING)
+
+def draw_text_2d(text, loc, color):
     global C
 
     ortho(0, C.window.width, 0, C.window.height)
@@ -161,13 +173,51 @@ def draw_text(text, loc, color):
     glScalef(scale, scale, 1)
     glDisable(GL_LIGHTING)
     glColor3fv(color)
+    glLineWidth(2)
     for c in text:
         glutStrokeCharacter(GLUT_STROKE_ROMAN, ord(c))
+
+def transform_to_face(mesh, f):
+    # find center
+    center = numpy.array((0, 0, 0))
+    for v in mesh.faces[f]:
+        center += mesh.verts[v]
+    center = center * (1.0 / len(mesh.faces[f]))
+
+    # find orientation
+    n = C.mesh.face_normal(f)
+    w = numpy.array([0, 0, 1])
+    axis = numpy.cross(n, w)
+    angle = -math.degrees(math.acos(numpy.dot(n, w))) + 180
+    #print f, angle, axis
+
+    glTranslatef(*center)
+    glRotatef(angle, *axis)
+
+    # add slight offset above face
+    glTranslatef(0, 0, 0.001)
 
 def draw_mesh():
     global C
 
     perspective()
+
+    # draw axes
+    big = 1000
+    glLineWidth(1)
+    glBegin(GL_LINES)
+    glColor3f(1, 0, 0)
+    glVertex3f(0, 0, 0)
+    glVertex3f(big, 0, 0)
+
+    glColor3f(0, 1, 0)
+    glVertex3f(0, 0, 0)
+    glVertex3f(0, big, 0)
+
+    glColor3f(0, 0, 1)
+    glVertex3f(0, 0, 0)
+    glVertex3f(0, 0, big)
+    glEnd()
 
     # set light position
     glEnable(GL_LIGHTING)
@@ -184,11 +234,17 @@ def draw_mesh():
             glVertex3fv(C.mesh.verts[v])
         glEnd()
 
+        # label face
+        glPushMatrix()
+        transform_to_face(C.mesh, f)
+        draw_text_3d(f, (0, 0, 0), (0, 0, 0))
+        glPopMatrix()
+
     # label vertices
     for v in C.mesh.verts:
-        draw_text(v,
-                  gluProject(*C.mesh.verts[v]),
-                  (0, 0, 0))
+        draw_text_2d(v,
+                     gluProject(*C.mesh.verts[v]),
+                     (0, 0, 0))
         perspective()
 
 def init_state():
@@ -206,7 +262,6 @@ def init_state():
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     glEnable(GL_BLEND)
     glEnable(GL_LINE_SMOOTH)
-    glLineWidth(2)
   
 
 def display():
