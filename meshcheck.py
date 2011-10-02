@@ -3,11 +3,54 @@
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from OpenGL.GL import *
+
+import json
+import pprint
 import sys
 
 _inited = False
+mesh = None
+
+class Mesh:
+    def __init__(self):
+        self.verts = {}
+        self.faces = {}
+
+    def add_vert(self, name, x, y, z):
+        if name in self.verts:
+            raise Exception('Duplicate vertex name')
+        self.verts[name] = (x, y, z)
+
+    def add_face(self, name, verts):
+        if name in self.faces:
+            raise Exception('Duplicate face name')
+        for v in verts:
+            if v not in self.verts:
+                raise Exception('Unknown vertex ' + str(v))
+        self.faces[name] = verts
+
+def load_json_mesh(text):
+    mesh = Mesh()
+    json_mesh = json.loads(text)
+    verts = json_mesh['verts']
+    faces = json_mesh['faces']
+
+    for v in verts:
+        mesh.add_vert(v, *verts[v])
+
+    for f in faces:
+        mesh.add_face(f, faces[f])
+
+    #pprint.pprint(mesh.verts)
+    #pprint.pprint(mesh.faces)
+
+    return mesh
 
 def main():
+    # get mesh
+    global mesh
+    mesh = load_json_mesh(open('test.json').read())
+
     # initialize GLUT window
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
@@ -57,6 +100,16 @@ def draw_background(top_color, bottom_color):
 
 def draw_mesh():
     glEnable(GL_LIGHTING)
+    color = [1.0,0.,0.,1.]
+    glMaterialfv(GL_FRONT,GL_DIFFUSE,color)
+
+    global mesh
+
+    for f in mesh.faces:
+        glBegin(GL_POLYGON)
+        for v in mesh.faces[f]:
+            glVertex3fv(mesh.verts[v])
+        glEnd()
 
 def init_state():
     global _inited
@@ -78,9 +131,6 @@ def display():
     draw_background((0.75, 0.75, 0.75),
                     (0.5, 0.5, 0.5))
     draw_mesh()
-    color = [1.0,0.,0.,1.]
-    glMaterialfv(GL_FRONT,GL_DIFFUSE,color)
-    glutSolidSphere(2,20,20)
     glutSwapBuffers()
     return
 
@@ -94,9 +144,5 @@ def reshape(width, height):
     gluLookAt(0,0,10,
               0,0,0,
               0,1,0)
-    #glMatrixMode(GL_PROJECTION)
-    #glLoadIdentity()
-    #glFrustum (-1.0, 1.0, -1.0, 1.0, 1.5, 20.0);
-    #glMatrixMode (GL_MODELVIEW);
 
 if __name__ == '__main__': main()
