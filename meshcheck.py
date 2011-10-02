@@ -199,6 +199,17 @@ def handle_mouse(button, state, x, y):
     C.window.mouse[button] = state
     C.window.mouse_last[button] = (x, y)
 
+    # handle scrollwheel zoom
+    zfac = 1
+    if button == 3:
+        C.camera.distance -= zfac
+        if C.camera.distance < 0:
+            C.camera.distance = 0
+        glutPostRedisplay()
+    elif button == 4:
+        C.camera.distance += zfac
+        glutPostRedisplay()
+
 def handle_motion(x, y):
     global C
     
