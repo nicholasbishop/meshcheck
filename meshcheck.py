@@ -23,6 +23,10 @@ class Context:
                              math.cos(self.angle)))
             return l * self.distance / numpy.linalg.norm(l)
 
+    class Preferences:
+        def __init__(self):
+            self.vertex_text_size = 1
+
     class Window:
         def __init__(self):
             self.mouse = {
@@ -38,6 +42,7 @@ class Context:
         self.camera = self.Camera()
         self.inited = False
         self.mesh = None
+        self.prefs = self.Preferences()
         self.window = self.Window()
 
 C = Context()
@@ -102,6 +107,28 @@ def main():
     # start meshcheck viewer
     glutMainLoop()
 
+def ortho(left, right, top, bottom):
+    # set up ortho view
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluOrtho2D(left, right, top, bottom)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+
+def perspective():
+    global C
+    
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(40, C.window.width*1.0/C.window.height, 1, 40)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+
+    eye = C.camera.location()
+    gluLookAt(eye[0], eye[1], eye[2],
+              0,0,0,
+              0,1,0)
+
 def draw_background(top_color, bottom_color):
     '''
     Clear color/depth and draw a background quad.
@@ -110,14 +137,7 @@ def draw_background(top_color, bottom_color):
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
     glDisable(GL_LIGHTING)
 
-    # set up ortho view
-    glMatrixMode(GL_PROJECTION)
-    glPushMatrix()
-    glLoadIdentity()
-    gluOrtho2D(0, 1, 0, 1)
-    glMatrixMode(GL_MODELVIEW)
-    glPushMatrix()
-    glLoadIdentity()
+    ortho(0, 1, 0, 1)
 
     # draw a quad with a top to bottom gradient
     glBegin(GL_QUADS)
@@ -132,28 +152,31 @@ def draw_background(top_color, bottom_color):
     # clear the depth buffer
     glClear(GL_DEPTH_BUFFER_BIT)
 
-    # reset matrices
-    glMatrixMode(GL_PROJECTION)
-    glPopMatrix()
-    glMatrixMode(GL_MODELVIEW)
-    glPopMatrix()
+def draw_text(text, loc, color):
+    global C
+
+    ortho(0, C.window.width, 0, C.window.height)
+    scale = C.prefs.vertex_text_size * 0.2
+    glTranslatef(*loc)
+    glScalef(scale, scale, 1)
+    glDisable(GL_LIGHTING)
+    glColor3fv(color)
+    for c in text:
+        glutStrokeCharacter(GLUT_STROKE_ROMAN, ord(c))
 
 def draw_mesh():
     global C
-    
-    glLoadIdentity()
-    eye = C.camera.location()
-    gluLookAt(eye[0], eye[1], eye[2],
-              0,0,0,
-              0,1,0)
+
+    perspective()
 
     # set light position
     glEnable(GL_LIGHTING)
-    glLightfv(GL_LIGHT0, GL_POSITION, -eye)
+    glLightfv(GL_LIGHT0, GL_POSITION, -C.camera.location() + [1])
 
-    color = [1.0,0.,0.,1.]
-    glMaterialfv(GL_FRONT,GL_DIFFUSE,color)
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, [0.35, 0.7, 0.85, 1])
+    #glMaterialfv(GL_FRONT, GL_DIFFUSE, [1, 0, 0, 1])
 
+    # draw faces
     for f in C.mesh.faces:
         glBegin(GL_POLYGON)
         glNormal3fv(C.mesh.face_normal(f))
@@ -161,18 +184,30 @@ def draw_mesh():
             glVertex3fv(C.mesh.verts[v])
         glEnd()
 
+    # label vertices
+    for v in C.mesh.verts:
+        draw_text(v,
+                  gluProject(*C.mesh.verts[v]),
+                  (0, 0, 0))
+        perspective()
+
 def init_state():
     global C
     if not C.inited:
         C.inited = True
-    #glShadeModel(GL_SMOOTH)
+    glShadeModel(GL_SMOOTH)
     glEnable(GL_CULL_FACE)
     glEnable(GL_DEPTH_TEST)
-    lightZeroColor = [0.8,1.0,0.8,1.0]
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightZeroColor)
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, [1, 1, 1, 1])
     glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.1)
     glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.05)
-    glEnable(GL_LIGHT0)        
+    glEnable(GL_LIGHT0)
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+    glEnable(GL_BLEND)
+    glEnable(GL_LINE_SMOOTH)
+    glLineWidth(2)
+  
 
 def display():
     init_state()
@@ -186,10 +221,6 @@ def reshape(width, height):
     global C
 
     glViewport(0, 0, width, height)
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    gluPerspective(40, width*1.0/height, 1, 40)
-    glMatrixMode(GL_MODELVIEW)
 
     C.window.width = width
     C.window.height = height
