@@ -47,6 +47,22 @@ class Context:
 C = Context()
 
 class Mesh:
+    class Vert:
+        def __init__(self, name, co):
+            self.name = name
+            self.co = co
+
+    class Face:
+        def __init__(self, name, v):
+            self.name = name
+            self.verts = v
+            
+            # calculate normal, assuming triangle for now
+            v1 = v[1].co - v[0].co
+            v2 = v[1].co - v[2].co
+            no = numpy.cross(v1, v2)
+            self.no = no * (1.0 / numpy.linalg.norm(no))
+
     def __init__(self):
         self.verts = {}
         self.faces = {}
@@ -54,23 +70,18 @@ class Mesh:
     def add_vert(self, name, x, y, z):
         if name in self.verts:
             raise Exception('Duplicate vertex name')
-        self.verts[name] = numpy.array([x*1.0, y*1.0, z*1.0])
+        self.verts[name] = self.Vert(name,
+                                     numpy.array([x, y, z]))
+        # TODO
+        self.verts[name].co *= 4
 
-    def add_face(self, name, verts):
+    def add_face(self, name, vert_names):
         if name in self.faces:
             raise Exception('Duplicate face name')
-        for v in verts:
-            if v not in self.verts:
-                raise Exception('Unknown vertex ' + str(v))
-        self.faces[name] = verts
+        verts = [self.verts[v] for v in vert_names]
+        
+        self.faces[name] = self.Face(name, verts)
 
-    def face_normal(self, name):
-        v = self.faces[name]
-        # assuming triangle for now
-        v1 = self.verts[v[1]] - self.verts[v[0]]
-        v2 = self.verts[v[1]] - self.verts[v[2]]
-        n = numpy.cross(v1, v2)
-        return n * (1.0 / numpy.linalg.norm(n))
 
 def load_json_mesh(text):
     mesh = Mesh()
@@ -90,7 +101,7 @@ def main():
     global C
 
     # get mesh
-    C.mesh = load_json_mesh(open('test.json').read())
+    C.mesh = load_json_mesh(open('test01.json').read())
 
     # initialize GLUT window
     glutInit(sys.argv)
@@ -177,25 +188,24 @@ def draw_text_2d(text, loc, color):
     for c in text:
         glutStrokeCharacter(GLUT_STROKE_ROMAN, ord(c))
 
-def transform_to_face(mesh, f):
+def transform_to_face(f):
     # find center
     center = numpy.array((0, 0, 0))
-    for v in mesh.faces[f]:
-        center += mesh.verts[v]
-    center = center * (1.0 / len(mesh.faces[f]))
+    for v in f.verts:
+        center += v.co
+    center = center * (1.0 / len(f.verts))
 
     # find orientation
-    n = C.mesh.face_normal(f)
+    n = f.no
     w = numpy.array([0, 0, 1])
     axis = numpy.cross(n, w)
     angle = -math.degrees(math.acos(numpy.dot(n, w))) + 180
-    #print f, angle, axis
 
     glTranslatef(*center)
     glRotatef(angle, *axis)
 
     # add slight offset above face
-    glTranslatef(0, 0, 0.001)
+    #glTranslatef(0, 0, -0.001)
 
 def draw_mesh():
     global C
@@ -223,27 +233,27 @@ def draw_mesh():
     glEnable(GL_LIGHTING)
     glLightfv(GL_LIGHT0, GL_POSITION, -C.camera.location() + [1])
 
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, [0.35, 0.7, 0.85, 1])
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, [0.35, 0.7, 0.85, 0.5])
     #glMaterialfv(GL_FRONT, GL_DIFFUSE, [1, 0, 0, 1])
 
     # draw faces
-    for f in C.mesh.faces:
+    for f in C.mesh.faces.values():
         glBegin(GL_POLYGON)
-        glNormal3fv(C.mesh.face_normal(f))
-        for v in C.mesh.faces[f]:
-            glVertex3fv(C.mesh.verts[v])
+        glNormal3fv(f.no)
+        for v in f.verts:
+            glVertex3fv(v.co)
         glEnd()
 
         # label face
         glPushMatrix()
-        transform_to_face(C.mesh, f)
-        draw_text_3d(f, (0, 0, 0), (0, 0, 0))
+        transform_to_face(f)
+        draw_text_3d(f.name, (0, 0, 0), (0, 0, 0))
         glPopMatrix()
 
     # label vertices
-    for v in C.mesh.verts:
-        draw_text_2d(v,
-                     gluProject(*C.mesh.verts[v]),
+    for v in C.mesh.verts.values():
+        draw_text_2d(v.name,
+                     gluProject(*v.co),
                      (0, 0, 0))
         perspective()
 
