@@ -53,15 +53,18 @@ class Mesh:
             self.co = co
 
     class Face:
-        def __init__(self, name, v):
+        def __init__(self, name, verts):
             self.name = name
-            self.verts = v
+            self.verts = verts
             
             # calculate normal, assuming triangle for now
-            v1 = v[1].co - v[0].co
-            v2 = v[1].co - v[2].co
-            no = numpy.cross(v1, v2)
+            v1 = verts[1].co - verts[0].co
+            v2 = verts[1].co - verts[2].co
+            no = numpy.cross(v2, v1)
             self.no = no * (1.0 / numpy.linalg.norm(no))
+
+            # calculate center
+            self.center = numpy.average([v.co for v in verts], 0)
 
     def __init__(self):
         self.verts = {}
@@ -188,24 +191,27 @@ def draw_text_2d(text, loc, color):
     for c in text:
         glutStrokeCharacter(GLUT_STROKE_ROMAN, ord(c))
 
+# not really correct obviously, but this at least gets close
 def transform_to_face(f):
-    # find center
-    center = numpy.array((0, 0, 0))
-    for v in f.verts:
-        center += v.co
-    center = center * (1.0 / len(f.verts))
-
     # find orientation
-    n = f.no
     w = numpy.array([0, 0, 1])
-    axis = numpy.cross(n, w)
-    angle = -math.degrees(math.acos(numpy.dot(n, w))) + 180
+    dot = numpy.dot(f.no, w)
+    changed = False
+    if abs(dot) < 0.01 or abs(dot) > 0.99:
+        w = numpy.array([0, 1, 0])
+        dot = numpy.dot(f.no, w)
+        changed = True
 
-    glTranslatef(*center)
+    axis = numpy.cross(w, f.no)
+    angle = math.degrees(math.acos(dot))
+
+    glTranslatef(*f.center)
     glRotatef(angle, *axis)
+    if changed:
+        glRotatef(90, -1, 0, 0)
 
     # add slight offset above face
-    #glTranslatef(0, 0, -0.001)
+    glTranslatef(0, 0, 0.01)
 
 def draw_mesh():
     global C
@@ -231,17 +237,24 @@ def draw_mesh():
 
     # set light position
     glEnable(GL_LIGHTING)
-    glLightfv(GL_LIGHT0, GL_POSITION, -C.camera.location() + [1])
-
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, [0.35, 0.7, 0.85, 0.5])
-    #glMaterialfv(GL_FRONT, GL_DIFFUSE, [1, 0, 0, 1])
+    glLightfv(GL_LIGHT0, GL_POSITION, C.camera.location() + [1])
+    glEnable(GL_COLOR_MATERIAL)
 
     # draw faces
     for f in C.mesh.faces.values():
+        glColor4f(0.35, 0.7, 0.85, 0.5)
         glBegin(GL_POLYGON)
         glNormal3fv(f.no)
         for v in f.verts:
             glVertex3fv(v.co)
+        glEnd()
+
+        # draw normal
+        glLineWidth(2)
+        glColor3f(1, 0, 0)
+        glBegin(GL_LINES)
+        glVertex3f(*f.center)
+        glVertex3f(*(f.center + f.no))
         glEnd()
 
         # label face
