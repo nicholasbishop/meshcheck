@@ -7,6 +7,7 @@ from OpenGL.GL import *
 import json
 import math
 import numpy
+import optparse
 import subprocess
 import sys
 
@@ -113,24 +114,6 @@ def load_json_mesh(C, text):
     C.mesh = Mesh(json_mesh['verts'],
                   json_mesh['faces'])
     C.camera.distance = C.mesh.scale * 4
-
-def main():
-    global C
-
-    # initialize GLUT window
-    glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
-    glutInitWindowSize(800, 600)
-    glutCreateWindow("meshcheck")
-
-    # GLUT callbacks
-    glutDisplayFunc(display)
-    glutReshapeFunc(reshape)
-    glutMouseFunc(handle_mouse)
-    glutMotionFunc(handle_motion)
-
-    # start meshcheck viewer
-    glutMainLoop()
 
 def ortho(left, right, top, bottom):
     # set up ortho view
@@ -364,4 +347,31 @@ def handle_motion(x, y):
             C.camera.elevation = limit
         glutPostRedisplay()
 
-if __name__ == '__main__': main()
+def main():
+    global C
+
+    usage = '%prog [mesh-file]\nDisplays a mesh loaded from a JSON file.\n'
+    usage += 'At runtime, press MMB to load a new mesh file from the clipboard.'
+    parser = optparse.OptionParser(usage)
+    (options, args) = parser.parse_args()
+
+    if len(args):
+        load_json_mesh(C, open(args[0]).read())
+
+    # initialize GLUT window
+    glutInit(sys.argv)
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
+    glutInitWindowSize(800, 600)
+    glutCreateWindow("meshcheck")
+
+    # GLUT callbacks
+    glutDisplayFunc(display)
+    glutReshapeFunc(reshape)
+    glutMouseFunc(handle_mouse)
+    glutMotionFunc(handle_motion)
+
+    # start meshcheck viewer
+    glutMainLoop()
+
+if __name__ == '__main__':
+    main()
