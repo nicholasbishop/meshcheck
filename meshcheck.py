@@ -4,6 +4,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from OpenGL.GL import *
 
+import FTGL as ftgl
 import json
 import math
 import numpy
@@ -41,6 +42,8 @@ class Context:
 
     def __init__(self):
         self.camera = self.Camera()
+        self.font = ftgl.PolygonFont('/usr/share/fonts/dejavu/DejaVuSans.ttf')
+        self.font.FaceSize(12)
         self.inited = False
         self.mesh = None
         self.prefs = self.Preferences()
@@ -160,15 +163,22 @@ def draw_background(top_color, bottom_color):
     # clear the depth buffer
     glClear(GL_DEPTH_BUFFER_BIT)
 
+def draw_text(text):
+    # ftgl doesn't handle unicode?
+    text = str(text)
+    bounds = (C.font.Advance(text), C.font.line_height)
+    glTranslatef(-bounds[0] / 2.0, -bounds[1] / 4.0, 0)
+    C.font.Render(text)
+
 def draw_text_3d(text, loc, scale, color):
+    global C
+
     glDisable(GL_LIGHTING)
     glPushMatrix()
-    scale *= 0.001
+    scale *= 0.01
     glScalef(scale, scale, scale)
     glColor3fv(color)
-    glLineWidth(2)
-    for c in text:
-        glutStrokeCharacter(GLUT_STROKE_ROMAN, ord(c))
+    draw_text(text)
     glPopMatrix()
     glEnable(GL_LIGHTING)
 
@@ -176,14 +186,13 @@ def draw_text_2d(text, loc, color):
     global C
 
     ortho(0, C.window.width, 0, C.window.height)
-    scale = C.prefs.vertex_text_size * 0.2
+    scale = C.prefs.vertex_text_size * 2
     glTranslatef(*loc)
     glScalef(scale, scale, 1)
     glDisable(GL_LIGHTING)
     glColor3fv(color)
     glLineWidth(2)
-    for c in text:
-        glutStrokeCharacter(GLUT_STROKE_ROMAN, ord(c))
+    draw_text(text)
 
 # not really correct obviously, but this at least gets close
 def transform_to_face(f):

@@ -8,7 +8,8 @@
   clipboard. MMB to load mesh. RMB-drag to rotate.
 
 * Dependencies
-  Uses xclip to read the clipboard (not cross-platform.)
+  - PyFTGL for text rendering
+  - xclip to read the clipboard (not cross-platform.)
 
 * Status
   As of October 2nd, this has just had a few hours worth of
