@@ -1,0 +1,12 @@
+* Purpose
+  Quickly-hacked together mesh viewer that displays labels for
+  vertices and faces. Intended as a visual aid for developing mesh
+  modeling tools.
+
+* Usage
+  Run the program. Copy a JSON representation of the mesh to the
+  clipboard. MMB to load mesh. RMB-drag to rotate.
+
+* Status
+  As of October 2nd, this has just had a few hours worth of
+  development, so it's pretty useless.
