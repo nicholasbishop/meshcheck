@@ -7,6 +7,7 @@ from OpenGL.GL import *
 import json
 import math
 import numpy
+import subprocess
 import sys
 
 class Context:
@@ -66,17 +67,30 @@ class Mesh:
             # calculate center
             self.center = numpy.average([v.co for v in verts], 0)
 
-    def __init__(self):
+    def __init__(self, verts, faces):
         self.verts = {}
         self.faces = {}
+        for v in verts:
+            self.add_vert(v, *verts[v])
+        for f in faces:
+            self.add_face(f, faces[f])
+
+        # calculate bounding box
+        inf = float("inf")
+        bmin = [inf, inf, inf]
+        bmax = [-inf, -inf, -inf]
+        for v in self.verts.values():
+            for axis in range(3):
+                if v.co[axis] < bmin[axis]:
+                    bmin[axis] = v.co[axis]
+                if v.co[axis] > bmax[axis]:
+                    bmax[axis] = v.co[axis]
 
     def add_vert(self, name, x, y, z):
         if name in self.verts:
             raise Exception('Duplicate vertex name')
         self.verts[name] = self.Vert(name,
                                      numpy.array([x, y, z]))
-        # TODO
-        self.verts[name].co *= 4
 
     def add_face(self, name, vert_names):
         if name in self.faces:
@@ -87,24 +101,12 @@ class Mesh:
 
 
 def load_json_mesh(text):
-    mesh = Mesh()
     json_mesh = json.loads(text)
-    verts = json_mesh['verts']
-    faces = json_mesh['faces']
-
-    for v in verts:
-        mesh.add_vert(v, *verts[v])
-
-    for f in faces:
-        mesh.add_face(f, faces[f])
-
-    return mesh
+    return Mesh(json_mesh['verts'],
+                json_mesh['faces'])
 
 def main():
     global C
-
-    # get mesh
-    C.mesh = load_json_mesh(open('test01.json').read())
 
     # initialize GLUT window
     glutInit(sys.argv)
@@ -213,12 +215,7 @@ def transform_to_face(f):
     # add slight offset above face
     glTranslatef(0, 0, 0.01)
 
-def draw_mesh():
-    global C
-
-    perspective()
-
-    # draw axes
+def draw_axes():
     big = 1000
     glLineWidth(1)
     glBegin(GL_LINES)
@@ -235,6 +232,16 @@ def draw_mesh():
     glVertex3f(0, 0, big)
     glEnd()
 
+def draw_mesh():
+    global C
+
+    perspective()
+
+    draw_axes()
+
+    if not C.mesh:
+        return
+    
     # set light position
     glEnable(GL_LIGHTING)
     glLightfv(GL_LIGHT0, GL_POSITION, C.camera.location() + [1])
@@ -303,10 +310,21 @@ def reshape(width, height):
     C.window.width = width
     C.window.height = height
 
+def get_clipboard():
+    return subprocess.Popen(('xclip', '-o'), stdout=subprocess.PIPE).communicate()[0]
+
 def handle_mouse(button, state, x, y):
     global C
     C.window.mouse[button] = state
     C.window.mouse_last[button] = (x, y)
+
+    # handle middle-button paste
+    if button == GLUT_MIDDLE_BUTTON and state == GLUT_UP:
+        try:
+            C.mesh = load_json_mesh(get_clipboard())
+        except ValueError:
+            print("Couldn't decode JSON from clipboard")
+        glutPostRedisplay()
 
     # handle scrollwheel zoom
     zfac = 1
@@ -322,11 +340,11 @@ def handle_mouse(button, state, x, y):
 def handle_motion(x, y):
     global C
     
-    if C.window.mouse[GLUT_MIDDLE_BUTTON] == GLUT_DOWN:
-        orig = C.window.mouse_last[GLUT_MIDDLE_BUTTON]
+    if C.window.mouse[GLUT_RIGHT_BUTTON] == GLUT_DOWN:
+        orig = C.window.mouse_last[GLUT_RIGHT_BUTTON]
         delta = ((x - orig[0]) / (C.window.width * 1.0),
                  (y - orig[1]) / (C.window.height * -1.0))
-        C.window.mouse_last[GLUT_MIDDLE_BUTTON] = (x, y)
+        C.window.mouse_last[GLUT_RIGHT_BUTTON] = (x, y)
 
         C.camera.angle -= delta[0] * 10
         C.camera.elevation -= delta[1] * 10
