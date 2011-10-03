@@ -85,7 +85,15 @@ class Mesh:
                     bmin[axis] = v.co[axis]
                 if v.co[axis] > bmax[axis]:
                     bmax[axis] = v.co[axis]
+        self.bounds = (numpy.array(bmin), numpy.array(bmax))
 
+        # calculate a scale for the object based off widest axis
+        size = self.bounds[1] - self.bounds[0]
+        self.scale = -inf
+        for w in size:
+            if w > self.scale:
+                self.scale = w
+        
     def add_vert(self, name, x, y, z):
         if name in self.verts:
             raise Exception('Duplicate vertex name')
@@ -100,10 +108,11 @@ class Mesh:
         self.faces[name] = self.Face(name, verts)
 
 
-def load_json_mesh(text):
+def load_json_mesh(C, text):
     json_mesh = json.loads(text)
-    return Mesh(json_mesh['verts'],
-                json_mesh['faces'])
+    C.mesh = Mesh(json_mesh['verts'],
+                  json_mesh['faces'])
+    C.camera.distance = C.mesh.scale * 4
 
 def main():
     global C
@@ -168,10 +177,10 @@ def draw_background(top_color, bottom_color):
     # clear the depth buffer
     glClear(GL_DEPTH_BUFFER_BIT)
 
-def draw_text_3d(text, loc, color):
+def draw_text_3d(text, loc, scale, color):
     glDisable(GL_LIGHTING)
     glPushMatrix()
-    scale = 0.001
+    scale *= 0.001
     glScalef(scale, scale, scale)
     glColor3fv(color)
     glLineWidth(2)
@@ -267,7 +276,7 @@ def draw_mesh():
         # label face
         glPushMatrix()
         transform_to_face(f)
-        draw_text_3d(f.name, (0, 0, 0), (0, 0, 0))
+        draw_text_3d(f.name, (0, 0, 0), C.mesh.scale, (0, 0, 0))
         glPopMatrix()
 
     # label vertices
@@ -321,7 +330,7 @@ def handle_mouse(button, state, x, y):
     # handle middle-button paste
     if button == GLUT_MIDDLE_BUTTON and state == GLUT_UP:
         try:
-            C.mesh = load_json_mesh(get_clipboard())
+            load_json_mesh(C, get_clipboard())
         except ValueError:
             print("Couldn't decode JSON from clipboard")
         glutPostRedisplay()
