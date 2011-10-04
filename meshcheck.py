@@ -249,11 +249,19 @@ def draw_mesh():
 
     # draw faces
     for f in C.mesh.faces.values():
-        glColor4f(0.35, 0.7, 0.85, 1)
-        glBegin(GL_POLYGON)
+        fcol = [0.35, 0.7, 0.85, 1]
+        glBegin(GL_TRIANGLES)
         glNormal3fv(f.no)
-        for v in f.verts:
-            glVertex3fv(v.co)
+        for i in range(len(f.verts)):
+            v1 = f.verts[i]
+            v2 = f.verts[(i+1) % len(f.verts)]
+            glColor4fv(fcol)
+            glVertex3fv(v1.co)
+            glVertex3fv(v2.co)
+            glVertex3fv(f.center)
+            fcol[0] -= 0.1
+            fcol[1] -= 0.1
+            fcol[2] -= 0.1
         glEnd()
 
         # draw normal
@@ -263,6 +271,31 @@ def draw_mesh():
         glVertex3f(*f.center)
         glVertex3f(*(f.center + f.no * C.mesh.scale / 2))
         glEnd()
+
+        # arrow to indicate first corner and polygon direction
+        glLineWidth(3)
+        glPushMatrix()
+        # offset slightly along normal to avoid zfighting
+        glTranslatef(*(f.no * 0.001))
+        glBegin(GL_LINE_STRIP)
+        glColor4f(0, 0, 0, 0.5)
+        # point near each corner (offset slightly along normal)
+        dl = []
+        for v in f.verts:
+            co = f.center * 0.25 + v.co * 0.75
+            dl.append(co)
+            glVertex3fv(co)
+        glEnd()
+        # arrow head
+        glBegin(GL_TRIANGLES)
+        base = dl[1] * 0.05 + dl[2] * 0.95
+        tip = dl[2]
+        cross = numpy.cross(f.no, (tip - base))
+        glVertex3fv(base - cross)
+        glVertex3fv(tip)
+        glVertex3fv(base + cross)
+        glEnd()
+        glPopMatrix()
 
         # label face
         glPushMatrix()
@@ -282,7 +315,7 @@ def init_state():
     if not C.inited:
         C.inited = True
     glShadeModel(GL_SMOOTH)
-    #glEnable(GL_CULL_FACE)
+    glEnable(GL_CULL_FACE)
     glEnable(GL_DEPTH_TEST)
     glLightfv(GL_LIGHT0, GL_DIFFUSE, [1, 1, 1, 1])
     glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.1)
