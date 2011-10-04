@@ -194,24 +194,23 @@ def draw_text_2d(text, loc, color):
     glLineWidth(2)
     draw_text(text)
 
-# not really correct obviously, but this at least gets close
 def transform_to_face(f):
-    # find orientation
-    w = numpy.array([0, 0, 1])
-    dot = numpy.dot(f.no, w)
-    changed = False
-    if abs(dot) < 0.01 or abs(dot) > 0.99:
-        w = numpy.array([0, 1, 0])
-        dot = numpy.dot(f.no, w)
-        changed = True
+    # choice of Z axis here is because text will be
+    # rendered on X/Y plane
+    orig = numpy.array([0, 0, 1])
+    new = f.no
 
-    axis = numpy.cross(w, f.no)
+    axis = numpy.cross(orig, new)
+    dot = numpy.dot(orig, new)
     angle = math.degrees(math.acos(dot))
 
     glTranslatef(*f.center)
-    glRotatef(angle, *axis)
-    if changed:
-        glRotatef(90, -1, 0, 0)
+
+    # edge case if normal is very close to Z axis
+    if dot < -0.99:
+        glRotatef(180, 0, 1, 0)
+    elif dot < 0.99:
+        glRotatef(angle, *axis)
 
     # add slight offset above face
     glTranslatef(0, 0, 0.01)
@@ -250,7 +249,7 @@ def draw_mesh():
 
     # draw faces
     for f in C.mesh.faces.values():
-        glColor4f(0.35, 0.7, 0.85, 0.5)
+        glColor4f(0.35, 0.7, 0.85, 1)
         glBegin(GL_POLYGON)
         glNormal3fv(f.no)
         for v in f.verts:
@@ -262,7 +261,7 @@ def draw_mesh():
         glColor3f(1, 0, 0)
         glBegin(GL_LINES)
         glVertex3f(*f.center)
-        glVertex3f(*(f.center + f.no))
+        glVertex3f(*(f.center + f.no * C.mesh.scale / 2))
         glEnd()
 
         # label face
@@ -283,7 +282,7 @@ def init_state():
     if not C.inited:
         C.inited = True
     glShadeModel(GL_SMOOTH)
-    glEnable(GL_CULL_FACE)
+    #glEnable(GL_CULL_FACE)
     glEnable(GL_DEPTH_TEST)
     glLightfv(GL_LIGHT0, GL_DIFFUSE, [1, 1, 1, 1])
     glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.1)
