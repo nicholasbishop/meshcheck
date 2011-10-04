@@ -131,7 +131,7 @@ def perspective():
     
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    gluPerspective(40, C.window.width*1.0/C.window.height, 1, 40)
+    gluPerspective(40, C.window.width*1.0/C.window.height, 0.1, 100)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
@@ -327,14 +327,14 @@ def handle_mouse(button, state, x, y):
         glutPostRedisplay()
 
     # handle scrollwheel zoom
-    zfac = 1
+    zfac = 0.9
     if button == 3:
-        C.camera.distance -= zfac
-        if C.camera.distance < 0:
-            C.camera.distance = 0
+        C.camera.distance *= zfac
+        if C.camera.distance < 0.1:
+            C.camera.distance = 0.1
         glutPostRedisplay()
     elif button == 4:
-        C.camera.distance += zfac
+        C.camera.distance /= zfac
         glutPostRedisplay()
 
 def handle_motion(x, y):
