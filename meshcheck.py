@@ -42,7 +42,7 @@ class Context:
 
     def __init__(self):
         self.camera = self.Camera()
-        self.font = ftgl.PolygonFont('/usr/share/fonts/dejavu/DejaVuSans.ttf')
+        self.font = ftgl.PolygonFont('LiberationSans-Regular.ttf')
         self.font.FaceSize(12)
         self.inited = False
         self.mesh = None
