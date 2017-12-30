@@ -17,6 +17,7 @@ glfw = "*"
 moderngl = "*"
 attrs = "*"
 numpy = "*"
+pyrr = "*"
 
 
 [dev-packages]
