@@ -1,8 +1,8 @@
 import ModernGL
 import glfw
 
-
 GLFW_INITIALIZED = False
+
 
 class WindowError(RuntimeError):
     pass

@@ -21,3 +21,6 @@ numpy = "*"
 
 [dev-packages]
 
+yapf = "*"
+pylint = "*"
+sate = "*"

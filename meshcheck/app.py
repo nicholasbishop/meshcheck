@@ -7,6 +7,7 @@ import numpy
 
 from meshcheck import window
 
+
 class MeshCheckWindow(window.Window):
     def __init__(self, mesh):
         super().__init__((1280, 1024), 'meshcheck', (3, 3))
@@ -89,10 +90,9 @@ class Mesh:
             elif len(val) == 4:
                 quads[key] = val
             else:
-                raise NotImplementedError('only triangles and quads are allowed')
-        return cls(verts=verts,
-                   trias=trias,
-                   quads=quads)
+                raise NotImplementedError(
+                    'only triangles and quads are allowed')
+        return cls(verts=verts, trias=trias, quads=quads)
 
 
 def parse_args():

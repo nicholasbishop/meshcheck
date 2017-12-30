@@ -12,19 +12,8 @@ import optparse
 import subprocess
 import sys
 
+
 class Context:
-    class Camera:
-        def __init__(self):
-            self.elevation = 0
-            self.angle = 0
-            self.distance = 5
-
-        def location(self):
-            l = numpy.array((math.sin(self.angle),
-                             math.sin(self.elevation),
-                             math.cos(self.angle)))
-            return l * self.distance / numpy.linalg.norm(l)
-
     class Preferences:
         def __init__(self):
             self.vertex_text_size = 1
@@ -34,11 +23,13 @@ class Context:
             self.mouse = {
                 GLUT_LEFT_BUTTON: GLUT_UP,
                 GLUT_MIDDLE_BUTTON: GLUT_UP,
-                GLUT_RIGHT_BUTTON: GLUT_UP}
+                GLUT_RIGHT_BUTTON: GLUT_UP
+            }
             self.mouse_last = {
                 GLUT_LEFT_BUTTON: (0, 0),
                 GLUT_MIDDLE_BUTTON: (0, 0),
-                GLUT_RIGHT_BUTTON: (0, 0)}
+                GLUT_RIGHT_BUTTON: (0, 0)
+            }
 
     def __init__(self):
         self.camera = self.Camera()
@@ -49,7 +40,9 @@ class Context:
         self.prefs = self.Preferences()
         self.window = self.Window()
 
+
 C = Context()
+
 
 class Mesh:
     class Vert:
@@ -61,7 +54,7 @@ class Mesh:
         def __init__(self, name, verts):
             self.name = name
             self.verts = verts
-            
+
             # calculate normal, assuming triangle for now
             v1 = verts[1].co - verts[0].co
             v2 = verts[1].co - verts[2].co
@@ -97,26 +90,25 @@ class Mesh:
         for w in size:
             if w > self.scale:
                 self.scale = w
-        
+
     def add_vert(self, name, x, y, z):
         if name in self.verts:
             raise Exception('Duplicate vertex name')
-        self.verts[name] = self.Vert(name,
-                                     numpy.array([x, y, z]))
+        self.verts[name] = self.Vert(name, numpy.array([x, y, z]))
 
     def add_face(self, name, vert_names):
         if name in self.faces:
             raise Exception('Duplicate face name')
         verts = [self.verts[v] for v in vert_names]
-        
+
         self.faces[name] = self.Face(name, verts)
 
 
 def load_json_mesh(C, text):
     json_mesh = json.loads(text)
-    C.mesh = Mesh(json_mesh['verts'],
-                  json_mesh['faces'])
+    C.mesh = Mesh(json_mesh['verts'], json_mesh['faces'])
     C.camera.distance = C.mesh.scale * 4
+
 
 def ortho(left, right, top, bottom):
     # set up ortho view
@@ -126,26 +118,26 @@ def ortho(left, right, top, bottom):
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
+
 def perspective():
     global C
-    
+
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    gluPerspective(40, C.window.width*1.0/C.window.height, 0.1, 100)
+    gluPerspective(40, C.window.width * 1.0 / C.window.height, 0.1, 100)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
     eye = C.camera.location()
-    gluLookAt(eye[0], eye[1], eye[2],
-              0,0,0,
-              0,1,0)
+    gluLookAt(eye[0], eye[1], eye[2], 0, 0, 0, 0, 1, 0)
+
 
 def draw_background(top_color, bottom_color):
     '''
     Clear color/depth and draw a background quad.
     '''
     # clear color and depth, disable lighting
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glDisable(GL_LIGHTING)
 
     ortho(0, 1, 0, 1)
@@ -163,12 +155,14 @@ def draw_background(top_color, bottom_color):
     # clear the depth buffer
     glClear(GL_DEPTH_BUFFER_BIT)
 
+
 def draw_text(text):
     # ftgl doesn't handle unicode?
     text = str(text)
     bounds = (C.font.Advance(text), C.font.line_height)
     glTranslatef(-bounds[0] / 2.0, -bounds[1] / 4.0, 0)
     C.font.Render(text)
+
 
 def draw_text_3d(text, loc, scale, color):
     global C
@@ -182,6 +176,7 @@ def draw_text_3d(text, loc, scale, color):
     glPopMatrix()
     glEnable(GL_LIGHTING)
 
+
 def draw_text_2d(text, loc, color):
     global C
 
@@ -193,6 +188,7 @@ def draw_text_2d(text, loc, color):
     glColor3fv(color)
     glLineWidth(2)
     draw_text(text)
+
 
 def transform_to_face(f):
     # choice of Z axis here is because text will be
@@ -215,6 +211,7 @@ def transform_to_face(f):
     # add slight offset above face
     glTranslatef(0, 0, 0.01)
 
+
 def draw_axes():
     big = 1000
     glLineWidth(1)
@@ -232,6 +229,7 @@ def draw_axes():
     glVertex3f(0, 0, big)
     glEnd()
 
+
 def draw_mesh():
     global C
 
@@ -241,7 +239,7 @@ def draw_mesh():
 
     if not C.mesh:
         return
-    
+
     # set light position
     glEnable(GL_LIGHTING)
     glLightfv(GL_LIGHT0, GL_POSITION, C.camera.location() + [1])
@@ -254,7 +252,7 @@ def draw_mesh():
         glNormal3fv(f.no)
         for i in range(len(f.verts)):
             v1 = f.verts[i]
-            v2 = f.verts[(i+1) % len(f.verts)]
+            v2 = f.verts[(i + 1) % len(f.verts)]
             glColor4fv(fcol)
             glVertex3fv(v1.co)
             glVertex3fv(v2.co)
@@ -305,10 +303,9 @@ def draw_mesh():
 
     # label vertices
     for v in C.mesh.verts.values():
-        draw_text_2d(v.name,
-                     gluProject(*v.co),
-                     (0, 0, 0))
+        draw_text_2d(v.name, gluProject(*v.co), (0, 0, 0))
         perspective()
+
 
 def init_state():
     global C
@@ -325,15 +322,15 @@ def init_state():
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     glEnable(GL_BLEND)
     glEnable(GL_LINE_SMOOTH)
-  
+
 
 def display():
     init_state()
-    draw_background((0.75, 0.75, 0.75),
-                    (0.5, 0.5, 0.5))
+    draw_background((0.75, 0.75, 0.75), (0.5, 0.5, 0.5))
     draw_mesh()
     glutSwapBuffers()
     return
+
 
 def reshape(width, height):
     global C
@@ -343,8 +340,11 @@ def reshape(width, height):
     C.window.width = width
     C.window.height = height
 
+
 def get_clipboard():
-    return subprocess.Popen(('xclip', '-o'), stdout=subprocess.PIPE).communicate()[0]
+    return subprocess.Popen(
+        ('xclip', '-o'), stdout=subprocess.PIPE).communicate()[0]
+
 
 def handle_mouse(button, state, x, y):
     global C
@@ -370,9 +370,10 @@ def handle_mouse(button, state, x, y):
         C.camera.distance /= zfac
         glutPostRedisplay()
 
+
 def handle_motion(x, y):
     global C
-    
+
     if C.window.mouse[GLUT_RIGHT_BUTTON] == GLUT_DOWN:
         orig = C.window.mouse_last[GLUT_RIGHT_BUTTON]
         delta = ((x - orig[0]) / (C.window.width * 1.0),
@@ -387,6 +388,7 @@ def handle_motion(x, y):
         if C.camera.elevation > limit:
             C.camera.elevation = limit
         glutPostRedisplay()
+
 
 def main():
     global C
@@ -413,6 +415,7 @@ def main():
 
     # start meshcheck viewer
     glutMainLoop()
+
 
 if __name__ == '__main__':
     main()

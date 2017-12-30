@@ -1,0 +1,5 @@
+[format]
+yapf -i meshcheck/*.py
+
+[lint]
+pylint meshcheck
