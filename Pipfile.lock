@@ -1,0 +1,63 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "2f9cce4e1e24b1bec6d5ece2d53892ee1820aaa1e08251d62c22af72a11eb7b6"
+        },
+        "host-environment-markers": {
+            "implementation_name": "cpython",
+            "implementation_version": "3.6.3",
+            "os_name": "posix",
+            "platform_machine": "x86_64",
+            "platform_python_implementation": "CPython",
+            "platform_release": "4.14.8-300.fc27.x86_64",
+            "platform_system": "Linux",
+            "platform_version": "#1 SMP Wed Dec 20 19:00:18 UTC 2017",
+            "python_full_version": "3.6.3",
+            "python_version": "3.6",
+            "sys_platform": "linux"
+        },
+        "pipfile-spec": 6,
+        "requires": {},
+        "sources": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.python.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "glfw": {
+            "hashes": [
+                "sha256:27fbea8a18eae4f6ecb44c51893bc0fca156b3d1b97e4b0f2fee6c6d11dbb712"
+            ],
+            "version": "==1.4.0"
+        },
+        "moderngl": {
+            "hashes": [
+                "sha256:0708adeaa134ae3f8eac3e314e6c3e3815edb7440ebe5f829717ff139cf6bedb",
+                "sha256:347da4ccd6a73e8be10bd70f046e4de0f58dfe7204e04d788ac69def6dac2353",
+                "sha256:1650ae3cecece57cc1cc7aa7979531e5ca6468a736e671dea6c5ca5a8db584db",
+                "sha256:45cc8f772bc5187c2398844339dfd366f9bd81a5dd99d8fa7d2e37fa7be8c44f",
+                "sha256:4d9ff542f7c9577a9a6a50e9218cec18edd8842e7d758d4072d87391e3c614df",
+                "sha256:598ceb64ea27b6aa6867adf27d8fd0122a1d7453d19960b461b1b8a5412545f8",
+                "sha256:3c3f5df5696ca40aa41cac6def1dd79c4921f9d665007cf1efa8f51d0ec47c21",
+                "sha256:fcb3f5d300d0b8779726d4461194001d4f88b647f20fdeb2c4e22bb845d94589",
+                "sha256:f89ac0d3ede74d28a805db11862763041f9e56e204b5c736c4f9b8ff14dfd57d",
+                "sha256:cb508c91cbb7b56c429f193f475c9d7fa2faf289bab2745cb5f9c31a83364798",
+                "sha256:a1686bcd47ab0ad81a4a3a14d4117b917affff78051b260116af1c7174d873bf",
+                "sha256:394a7536f658e2a0b89b7cb164538f548fe8c840e0243452665dd4429651d66e"
+            ],
+            "version": "==4.2.1"
+        },
+        "pyopengl": {
+            "hashes": [
+                "sha256:9b47c5c3a094fa518ca88aeed35ae75834d53e4285512c61879f67a48c94ddaf",
+                "sha256:5b3a14a4e4c87cf25ca41bc5878583df0e434624b13fcc55d1a672f79ad1b76f",
+                "sha256:efa4e39a49b906ccbe66758812ca81ced13a6f26931ab2ba2dba2750c016c0d0"
+            ],
+            "version": "==3.1.0"
+        }
+    },
+    "develop": {}
+}
