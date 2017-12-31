@@ -15,19 +15,21 @@ def to_gl(mat):
 
 
 class TextNode:
+    Program = None
+
     def __init__(self, ctx, vert):
         self._text = vert[0]
         self._where = vert[1]
 
-        # TODO cache the shader program
-        shader_code = shader.ShaderCode.load('text')
-        self._prog = shader_code.create_program(ctx)
+        if TextNode.Program is None:
+            shader_code = shader.ShaderCode.load('text')
+            TextNode.Program = shader_code.create_program(ctx)
 
         self._vbo = self._make_vert_vbo(ctx)
         self._vao = self._make_tria_vao(ctx)
         self._texture = self._make_texture(ctx)
 
-        self._prog.uniforms['size'].value = self._texture.size
+        TextNode.Program.uniforms['size'].value = self._texture.size
 
     @staticmethod
     def _make_vert_vbo(ctx):
@@ -46,7 +48,7 @@ class TextNode:
 
     def _make_tria_vao(self, ctx):
         attrs = ['pos', 'uv']
-        return ctx.simple_vertex_array(self._prog, self._vbo, attrs)
+        return ctx.simple_vertex_array(self.Program, self._vbo, attrs)
 
     def _make_texture(self, ctx):
         surface = text_render.render(self._text)
@@ -64,8 +66,8 @@ class TextNode:
 
     def render(self, proj, model_view):
         model_view = glm.translate(model_view, self._where)
-        self._prog.uniforms['model_view'].write(to_gl(model_view))
-        self._prog.uniforms['proj'].write(to_gl(proj))
+        self.Program.uniforms['model_view'].write(to_gl(model_view))
+        self.Program.uniforms['proj'].write(to_gl(proj))
         #self._sampler = self._texture
         self._texture.use()
         self._vao.render()
