@@ -3,3 +3,14 @@ yapf -i meshcheck/*.py
 
 [lint]
 pylint meshcheck
+
+[package]
+# Clear out existing packages first
+[nofail] rm -r dist
+./setup.py sdist bdist_wheel
+
+[bump-minor deps(format lint)]
+bumpversion minor
+
+[publish deps(package)]
+twine upload dist/*
