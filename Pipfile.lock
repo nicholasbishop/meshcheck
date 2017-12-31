@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "846f4193123aac6223ce6760158428681e84bc8344d4239217aa8a2bbba8ae21"
+            "sha256": "4e71663e4b8c32c4f4767dc687589ab3af47c34e8f0f7ff5bba0866890c06f46"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -36,24 +36,11 @@
             ],
             "version": "==17.4.0"
         },
-        "click": {
-            "hashes": [
-                "sha256:29f99fc6125fbc931b758dc053b3114e55c77a6e4c6c3a2674a2dc986016381d",
-                "sha256:f15516df478d5a56180fbf80e68f206010e6d160fc39fa508b65e035fd75130b"
-            ],
-            "version": "==6.7"
-        },
         "glfw": {
             "hashes": [
                 "sha256:27fbea8a18eae4f6ecb44c51893bc0fca156b3d1b97e4b0f2fee6c6d11dbb712"
             ],
             "version": "==1.4.0"
-        },
-        "glm": {
-            "hashes": [
-                "sha256:4ca690f45dd32c5308261f4214d63699ee9a2b816345015aa30b7661f70a6300"
-            ],
-            "version": "==0.1.0"
         },
         "moderngl": {
             "hashes": [
@@ -105,6 +92,12 @@
                 "sha256:ee4c3068c048230e5ce74bb8994a024711129bde1af1d76e3276c7acd81c4357"
             ],
             "version": "==1.15.4"
+        },
+        "pyglm": {
+            "hashes": [
+                "sha256:b26a18165fc60f3679fd37e45d93f405142e66e0d489d173bd109989933cc6be"
+            ],
+            "version": "==0.2.1a1"
         },
         "pygobject": {
             "hashes": [
