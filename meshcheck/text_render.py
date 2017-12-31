@@ -62,9 +62,9 @@ def render(text):
 class TextNode:
     Program = None
 
-    def __init__(self, ctx, vert):
-        self._text = vert[0]
-        self._where = vert[1]
+    def __init__(self, ctx, text, where):
+        self._text = text
+        self._where = where
 
         if TextNode.Program is None:
             shader_code = shader.ShaderCode.load('text')

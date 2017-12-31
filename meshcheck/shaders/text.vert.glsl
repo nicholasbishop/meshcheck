@@ -17,7 +17,7 @@ void main() {
       billboard[i][j] = i == j ? 1 : 0;
     }
   }
-  float z_offset = 0.1;
+  float z_offset = 0.5;
   mat4 transform = proj * billboard;
   gl_Position = transform * vec4(offset_pos * scaled_size, z_offset, 1.0);
 }

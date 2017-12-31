@@ -3,6 +3,7 @@ import json
 import sys
 
 import attr
+import glm
 import ModernGL
 import numpy
 
@@ -61,14 +62,26 @@ class MeshCheckWindow(window.Window):
         if self._camera_controller.in_drag:
             self._camera_controller.update_drag(event.pos)
 
+    def _face_center(self, face):
+        center = glm.vec3()
+        for vert in face:
+            center += self._mesh.verts[vert]
+        center /= len(face)
+        return center
+
     def initialize(self, ctx):
         shader_code = shader.ShaderCode.load('default')
         self._prog = shader_code.create_program(ctx)
         self._mvp = self._prog.uniforms['mvp']
 
         self._text_nodes = [
-            text_render.TextNode(ctx, vert)
-            for vert in self._mesh.verts.items()
+            text_render.TextNode(ctx, key, vert)
+            for key, vert in self._mesh.verts.items()
+        ]
+
+        self._text_nodes += [
+            text_render.TextNode(ctx, key, self._face_center(face))
+            for key, face in self._mesh.faces.items()
         ]
 
         self._vert_vbo = self._make_vert_vbo(ctx)
