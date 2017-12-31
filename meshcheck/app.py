@@ -7,70 +7,8 @@ import glm
 import ModernGL
 import numpy
 
-from meshcheck import camera, camera_controller, shader, text_render, window
-
-
-def to_gl(mat):
-    return mat.value.tobytes()
-
-
-class TextNode:
-    Program = None
-
-    def __init__(self, ctx, vert):
-        self._text = vert[0]
-        self._where = vert[1]
-
-        if TextNode.Program is None:
-            shader_code = shader.ShaderCode.load('text')
-            TextNode.Program = shader_code.create_program(ctx)
-
-        self._vbo = self._make_vert_vbo(ctx)
-        self._vao = self._make_tria_vao(ctx)
-        self._texture = self._make_texture(ctx)
-
-        TextNode.Program.uniforms['size'].value = self._texture.size
-
-    @staticmethod
-    def _make_vert_vbo(ctx):
-        # Format: Two triangles with 2d position and 2d UV coord
-        # yapf: disable
-        arr = numpy.array([
-            0, 0, 0, 1,
-            1, 0, 1, 1,
-            1, 1, 1, 0,
-            0, 0, 0, 1,
-            1, 1, 1, 0,
-            0, 1, 0, 0
-        ], dtype='float32')
-        # yapf: enable
-        return ctx.buffer(arr)
-
-    def _make_tria_vao(self, ctx):
-        attrs = ['pos', 'uv']
-        return ctx.simple_vertex_array(self.Program, self._vbo, attrs)
-
-    def _make_texture(self, ctx):
-        surface = text_render.render(self._text)
-        components = 1
-        stride = surface.get_stride()
-        width = surface.get_width()
-        height = surface.get_height()
-        # Remove the pixel data that comes from |stride|, ModernGL
-        # doesn't have an input stride parameter currently
-        src_data = surface.get_data()
-        dst_data = bytes()
-        for row in range(height):
-            dst_data += src_data[row * stride:row * stride + width * components]
-        return ctx.texture((width, height), components, dst_data)
-
-    def render(self, proj, model_view):
-        model_view = glm.translate(model_view, self._where)
-        self.Program.uniforms['model_view'].write(to_gl(model_view))
-        self.Program.uniforms['proj'].write(to_gl(proj))
-        #self._sampler = self._texture
-        self._texture.use()
-        self._vao.render()
+from meshcheck import (camera, camera_controller, shader, text_render,
+                       util, window)
 
 
 class MeshCheckWindow(window.Window):
@@ -130,7 +68,8 @@ class MeshCheckWindow(window.Window):
         self._mvp = self._prog.uniforms['mvp']
 
         self._text_nodes = [
-            TextNode(ctx, vert) for vert in self._mesh.verts.items()
+            text_render.TextNode(ctx, vert)
+            for vert in self._mesh.verts.items()
         ]
 
         self._vert_vbo = self._make_vert_vbo(ctx)
@@ -141,7 +80,7 @@ class MeshCheckWindow(window.Window):
         ctx.enable(ModernGL.DEPTH_TEST)
         ctx.disable(ModernGL.CULL_FACE)
         self._camera.size = self.size()
-        self._mvp.write(to_gl(self._camera.mvp))
+        self._mvp.write(util.to_gl(self._camera.mvp))
         self._tria_vao.render()
         for text_node in self._text_nodes:
             text_node.render(self._camera.proj, self._camera.model_view)
