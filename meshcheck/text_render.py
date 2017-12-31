@@ -23,7 +23,7 @@ def create_layout(cairo_ctx, text):
 
 def measure_text(text):
     surface_size = (1, 1)
-    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, *surface_size)
+    surface = cairo.ImageSurface(cairo.FORMAT_A8, *surface_size)
     cairo_ctx = cairo.Context(surface)
     layout = create_layout(cairo_ctx, text)
 
@@ -34,18 +34,26 @@ def measure_text(text):
 
 def render(text):
     width, height = measure_text(text)
-    surface = cairo.ImageSurface(cairo.FORMAT_A8, width, height)
+    # Add space for shadow
+    width += 1
+    height += 1
+    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     ctx = cairo.Context(surface)
 
-    # Black text on white background
-    ctx.set_source_rgba(1.0, 1.0, 1.0, 1.0)
-    ctx.paint()
-
-    # Override the alpha channel
+    # Clear background
     ctx.set_operator(cairo.OPERATOR_SOURCE)
     ctx.set_source_rgba(0.0, 0.0, 0.0, 0.0)
+    ctx.paint()
+
+    ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0)
 
     layout = create_layout(ctx, text)
+    PangoCairo.show_layout(ctx, layout)
+
+    ctx.set_source_rgba(1.0, 0.7, 0.8, 1.0)
+
+    ctx.translate(-1, -1)
+    PangoCairo.update_layout(ctx, layout)
     PangoCairo.show_layout(ctx, layout)
 
     return surface
@@ -89,7 +97,7 @@ class TextNode:
 
     def _make_texture(self, ctx):
         surface = render(self._text)
-        components = 1
+        components = 4
         stride = surface.get_stride()
         width = surface.get_width()
         height = surface.get_height()
@@ -106,6 +114,5 @@ class TextNode:
         model_view = glm.translate(model_view, self._where)
         self.Program.uniforms['model_view'].write(util.to_gl(model_view))
         self.Program.uniforms['proj'].write(util.to_gl(proj))
-        #self._sampler = self._texture
         self._texture.use()
         self._vao.render()

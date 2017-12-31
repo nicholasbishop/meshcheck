@@ -77,6 +77,7 @@ class MeshCheckWindow(window.Window):
     def render(self, ctx):
         ctx.clear(0.9, 0.9, 0.9)
         ctx.enable(ModernGL.DEPTH_TEST)
+        ctx.enable(ModernGL.BLEND)
         ctx.disable(ModernGL.CULL_FACE)
         self._camera.size = self.size()
         self._mvp.write(util.to_gl(self._camera.mvp))
