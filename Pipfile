@@ -18,6 +18,7 @@ attrs = "*"
 numpy = "*"
 pycairo = "*"
 pygobject = "*"
+glm = "*"
 
 
 [dev-packages]
@@ -26,3 +27,4 @@ yapf = "*"
 pylint = "*"
 sate = "*"
 bumpversion = "*"
+twine = "*"
