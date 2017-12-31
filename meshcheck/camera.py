@@ -44,6 +44,16 @@ class Camera:
         """Model-view-projection matrix."""
         return self._mvp
 
+    @property
+    def proj(self):
+        """Projection matrix."""
+        return self._proj
+
+    @property
+    def model_view(self):
+        """Model-view matrix."""
+        return self._model_view
+
     def aspect_ratio(self):
         height = self._size[1]
         if height == 0:

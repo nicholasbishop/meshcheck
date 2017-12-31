@@ -18,6 +18,10 @@ moderngl = "*"
 attrs = "*"
 numpy = "*"
 pyglm = "*"
+glx = "*"
+pillow = "*"
+pycairo = "*"
+pygobject = "*"
 
 
 [dev-packages]
