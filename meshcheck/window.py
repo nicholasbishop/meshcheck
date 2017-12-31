@@ -41,10 +41,10 @@ class Window:
     def get_mouse_position(self):
         return glm.vec2(*glfw.get_cursor_pos(self._wnd))
 
-    def mouse_button_event(self, event):
+    def on_mouse_button(self, event):
         pass
 
-    def mouse_move_event(self, event):
+    def on_mouse_move(self, event):
         pass
 
     def initialize(self, ctx):
