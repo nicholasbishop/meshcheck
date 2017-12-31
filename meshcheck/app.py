@@ -1,6 +1,5 @@
 import argparse
 import json
-import os
 import sys
 
 import attr
@@ -112,5 +111,5 @@ def run():
         mesh = Mesh.from_file(args.path)
     else:
         mesh = Mesh.from_stdin()
-    window = MeshCheckWindow(mesh)
-    window.run()
+    wnd = MeshCheckWindow(mesh)
+    wnd.run()

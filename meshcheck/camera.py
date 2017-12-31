@@ -48,8 +48,7 @@ class Camera:
         height = self._size[1]
         if height == 0:
             return 1
-        else:
-            return self._size[0] / height
+        return self._size[0] / height
 
     @property
     def size(self):
@@ -75,8 +74,8 @@ class Camera:
         eye = eye * self.distance / numpy.linalg.norm(eye)
 
         target = (0, 0, 0)
-        up = (0, 1, 0)
-        self._model_view = glm.lookAt(eye, target, up)
+        upv = (0, 1, 0)
+        self._model_view = glm.lookAt(eye, target, upv)
 
         fovy = 70.0 * (math.pi / 180.0)
         aspect = self.aspect_ratio()

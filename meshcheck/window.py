@@ -27,10 +27,10 @@ class Window:
         glfw.set_cursor_pos_callback(self._wnd, self._cursor_pos_callback)
         glfw.set_mouse_button_callback(self._wnd, self._mouse_button_callback)
 
-    def _cursor_pos_callback(self, window, xpos, ypos):
+    def _cursor_pos_callback(self, _, xpos, ypos):
         self.on_mouse_move(events.MouseMoveEvent(glm.vec2(xpos, ypos)))
 
-    def _mouse_button_callback(self, window, button, action, mods):
+    def _mouse_button_callback(self, _, button, action, mods):
         self.on_mouse_button(
             events.MouseButtonEvent(
                 pos=self.get_mouse_position(),
