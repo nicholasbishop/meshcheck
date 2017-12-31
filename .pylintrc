@@ -1,0 +1,5 @@
+[MASTER]
+extension-pkg-whitelist=cairo
+
+[MESSAGE CONTROL]
+disable=too-few-public-methods

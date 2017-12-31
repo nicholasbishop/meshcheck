@@ -4,6 +4,7 @@ import cairo
 import glm
 import numpy
 
+# pylint: disable=wrong-import-position
 import gi
 gi.require_version("Pango", "1.0")
 gi.require_version("PangoCairo", "1.0")
