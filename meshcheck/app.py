@@ -7,8 +7,8 @@ import glm
 import ModernGL
 import numpy
 
-from meshcheck import (camera, camera_controller, shader, text_render,
-                       util, window)
+from meshcheck import (camera, camera_controller, shader, text_render, util,
+                       window)
 
 
 class MeshCheckWindow(window.Window):

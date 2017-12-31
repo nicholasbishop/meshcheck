@@ -11,6 +11,7 @@ from gi.repository import Pango, PangoCairo
 
 from meshcheck import shader, util
 
+
 def create_layout(cairo_ctx, text):
     layout = PangoCairo.create_layout(cairo_ctx)
     layout.set_font_description(Pango.FontDescription('serif 24'))
@@ -36,12 +37,12 @@ def render(text):
     ctx = cairo.Context(surface)
 
     # Black text on white background
-    ctx.set_source_rgba(1.0, 1.0, 1.0, 1.0);
+    ctx.set_source_rgba(1.0, 1.0, 1.0, 1.0)
     ctx.paint()
 
     # Override the alpha channel
-    ctx.set_operator(cairo.OPERATOR_SOURCE);
-    ctx.set_source_rgba(0.0, 0.0, 0.0, 0.0);
+    ctx.set_operator(cairo.OPERATOR_SOURCE)
+    ctx.set_source_rgba(0.0, 0.0, 0.0, 0.0)
 
     layout = create_layout(ctx, text)
     PangoCairo.show_layout(ctx, layout)
@@ -96,7 +97,8 @@ class TextNode:
         src_data = surface.get_data()
         dst_data = bytes()
         for row in range(height):
-            dst_data += src_data[row * stride:row * stride + width * components]
+            dst_data += src_data[row * stride:
+                                 row * stride + width * components]
         return ctx.texture((width, height), components, dst_data)
 
     def render(self, proj, model_view):
