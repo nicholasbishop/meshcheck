@@ -1,38 +1,60 @@
 import ModernGL
 import glfw
+import glm
 
-GLFW_INITIALIZED = False
+from meshcheck import events
 
 
 class WindowError(RuntimeError):
     pass
 
 
-def initialize_glfw():
-    """Initialize the library if not already initialized."""
-    if not glfw.init():
-        raise WindowError('glfw.init failed')
-    global GLFW_INITIALIZED
-    GLFW_INITIALIZED = True
-
-
 class Window:
     def __init__(self, size, title, gl_version):
-        initialize_glfw()
+        if not glfw.init():
+            raise WindowError('glfw.init failed')
 
         glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, gl_version[0])
         glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, gl_version[1])
         self._wnd = glfw.create_window(*size, title, None, None)
         if not self._wnd:
             raise WindowError('glfw.create_window failed')
+        self._init_events()
 
         self._ctx = None
+
+    def _init_events(self):
+        glfw.set_cursor_pos_callback(self._wnd, self._cursor_pos_callback)
+        glfw.set_mouse_button_callback(
+            self._wnd, self._mouse_button_callback)
+
+    def _cursor_pos_callback(self, window, xpos, ypos):
+        self.on_mouse_move(events.MouseMoveEvent(glm.vec2(xpos, ypos)))
+
+    def _mouse_button_callback(self, window, button, action, mods):
+        self.on_mouse_button(events.MouseButtonEvent(
+            pos=self.get_mouse_position(),
+            button=button,
+            action=action,
+            mods=mods))
+
+    def get_mouse_position(self):
+        return glm.vec2(*glfw.get_cursor_pos(self._wnd))
+
+    def mouse_button_event(self, event):
+        pass
+
+    def mouse_move_event(self, event):
+        pass
 
     def initialize(self, ctx):
         pass
 
     def render(self, ctx):
         pass
+
+    def size(self):
+        return glfw.get_framebuffer_size(self._wnd)
 
     def run(self):
         glfw.make_context_current(self._wnd)
@@ -41,7 +63,7 @@ class Window:
         self.initialize(self._ctx)
 
         while not glfw.window_should_close(self._wnd):
-            width, height = glfw.get_framebuffer_size(self._wnd)
+            width, height = self.size()
             self._ctx.viewport = (0, 0, width, height)
             self.render(self._ctx)
             glfw.swap_buffers(self._wnd)

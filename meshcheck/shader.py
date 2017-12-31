@@ -14,6 +14,7 @@ class ShaderError(RuntimeError):
 #
 # pylint: disable=no-member
 
+
 @attr.s(frozen=True, slots=True)
 class ShaderCode:
     """Shader code loader."""

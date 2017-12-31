@@ -6,7 +6,11 @@ import attr
 import ModernGL
 import numpy
 
-from meshcheck import shader, window
+from meshcheck import camera, camera_controller, shader, window
+
+
+def to_gl(mat):
+    return mat.value.tobytes()
 
 
 class MeshCheckWindow(window.Window):
@@ -17,6 +21,11 @@ class MeshCheckWindow(window.Window):
         self._quad_vao = None
         self._mesh = mesh
         self._vert_to_index = {}
+        self._prog = None
+        self._mvp = None
+        self._camera = camera.Camera()
+        self._camera_controller = camera_controller.CameraController(
+            self._camera)
 
     def _make_vert_vbo(self, ctx):
         lst = []
@@ -41,17 +50,31 @@ class MeshCheckWindow(window.Window):
                                self._make_tria_vbo(ctx))
         return vao
 
+    def on_mouse_button(self, event):
+        if event.is_left_button:
+            if event.is_press:
+                self._camera_controller.start_drag(event.pos)
+            elif event.is_release:
+                self._camera_controller.end_drag()
+            
+    def on_mouse_move(self, event):
+        if self._camera_controller.in_drag:
+            self._camera_controller.update_drag(event.pos)
+
     def initialize(self, ctx):
         shader_code = shader.ShaderCode.load('basic')
-        prog = shader_code.create_program(ctx)
+        self._prog = shader_code.create_program(ctx)
+        self._mvp = self._prog.uniforms['mvp']
 
         self._vert_vbo = self._make_vert_vbo(ctx)
-        self._tria_vao = self._make_tria_vao(ctx, prog)
-        #self._tria_vao = ctx.simple_vertex_array(prog, , ['vert'])
-        #self._quad_vao = ctx.simple_vertex_array(prog, vbo, ['vert'])
+        self._tria_vao = self._make_tria_vao(ctx, self._prog)
 
     def render(self, ctx):
         ctx.clear(0.9, 0.9, 0.9)
+        ctx.disable(ModernGL.DEPTH_TEST)
+        ctx.disable(ModernGL.CULL_FACE)
+        self._camera.size = self.size()
+        self._mvp.write(to_gl(self._camera.mvp))
         self._tria_vao.render()
 
 
