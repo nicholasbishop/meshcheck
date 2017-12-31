@@ -42,7 +42,7 @@ class MeshCheckWindow(window.Window):
             for index in range(2, len(tria)):
                 for offset in (0, index - 1, index):
                     lst.append(self._vert_to_index[tria[offset]])
-                
+
         arr = numpy.array(lst, dtype='uint32')
         return ctx.buffer(arr)
 
@@ -59,7 +59,7 @@ class MeshCheckWindow(window.Window):
                 self._camera_controller.start_drag(event.pos)
             elif event.is_release:
                 self._camera_controller.end_drag()
-            
+
     def on_mouse_move(self, event):
         if self._camera_controller.in_drag:
             self._camera_controller.update_drag(event.pos)

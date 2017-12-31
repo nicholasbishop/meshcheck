@@ -1,6 +1,7 @@
 import attr
 import glfw
 
+
 @attr.s
 class MouseButtonEvent:
     pos = attr.ib()

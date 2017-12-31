@@ -1,5 +1,6 @@
 import math
 
+
 class Angle:
     def __init__(self, radians=0):
         self._radians = radians

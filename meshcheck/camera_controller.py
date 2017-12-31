@@ -1,7 +1,9 @@
 from meshcheck import angle
 
+
 class CameraController:
     """Simple mouse camera controller."""
+
     def __init__(self, camera):
         self._camera = camera
         self._orig_angle = None

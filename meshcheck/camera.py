@@ -85,4 +85,3 @@ class Camera:
         self._proj = glm.perspective(fovy, aspect, near, far)
 
         self._mvp = self._proj * self._model_view
-
