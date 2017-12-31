@@ -110,6 +110,7 @@ def run():
     if args.path:
         mesh = Mesh.from_file(args.path)
     else:
+        print('reading from stdin...')
         mesh = Mesh.from_stdin()
     wnd = MeshCheckWindow(mesh)
     wnd.run()
