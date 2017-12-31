@@ -74,8 +74,6 @@ class TextNode:
         self._vao = self._make_tria_vao(ctx)
         self._texture = self._make_texture(ctx)
 
-        TextNode.Program.uniforms['size'].value = self._texture.size
-
     @staticmethod
     def _make_vert_vbo(ctx):
         # Format: Two triangles with 2d position and 2d UV coord
@@ -112,6 +110,7 @@ class TextNode:
 
     def render(self, proj, model_view):
         model_view = glm.translate(model_view, self._where)
+        self.Program.uniforms['size'].value = self._texture.size
         self.Program.uniforms['model_view'].write(util.to_gl(model_view))
         self.Program.uniforms['proj'].write(util.to_gl(proj))
         self._texture.use()
