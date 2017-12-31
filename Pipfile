@@ -12,14 +12,10 @@ python_version = "3.6"
 
 [packages]
 
-pyopengl = "*"
 glfw = "*"
 moderngl = "*"
 attrs = "*"
 numpy = "*"
-pyglm = "*"
-glx = "*"
-pillow = "*"
 pycairo = "*"
 pygobject = "*"
 
