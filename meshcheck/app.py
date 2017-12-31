@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import sys
 
 import attr
 import ModernGL
@@ -91,6 +92,10 @@ class Mesh:
             return cls.from_json(json.load(rfile))
 
     @classmethod
+    def from_stdin(cls):
+        return cls.from_json(json.load(sys.stdin))
+
+    @classmethod
     def from_json(cls, obj):
         return cls(verts=obj['verts'], faces=obj['faces'])
 
@@ -106,6 +111,6 @@ def run():
     if args.path:
         mesh = Mesh.from_file(args.path)
     else:
-        raise NotImplementedError('only file input works right now')
+        mesh = Mesh.from_stdin()
     window = MeshCheckWindow(mesh)
     window.run()
