@@ -34,3 +34,16 @@ Example:
     }
 
 Two additional example files are included in the repo.
+
+## Installation
+
+    pip3 install --user meshcheck
+    
+If you see an error like this:
+
+> error: option --single-version-externally-managed not recognized`
+
+Then try upgrading `setuptools` and `wheel`:
+
+    pip3 install --user --upgrade setuptools wheel
+
