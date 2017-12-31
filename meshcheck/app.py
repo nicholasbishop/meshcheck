@@ -18,7 +18,6 @@ class MeshCheckWindow(window.Window):
         super().__init__((1280, 1024), 'meshcheck', (3, 3))
         self._vert_vbo = None
         self._tria_vao = None
-        self._quad_vao = None
         self._mesh = mesh
         self._vert_to_index = {}
         self._prog = None
@@ -37,14 +36,17 @@ class MeshCheckWindow(window.Window):
 
     def _make_tria_vbo(self, ctx):
         lst = []
-        for tria in self._mesh.trias.values():
-            for vert in tria:
-                lst.append(self._vert_to_index[vert])
+        for tria in self._mesh.faces.values():
+            # Naive triangle tessellation
+            for index in range(2, len(tria)):
+                for offset in (0, index - 1, index):
+                    lst.append(self._vert_to_index[tria[offset]])
+                
         arr = numpy.array(lst, dtype='uint32')
         return ctx.buffer(arr)
 
     def _make_tria_vao(self, ctx, prog):
-        attrs = ['vert']
+        attrs = ['pos']
         fmt = ModernGL.buffers.detect_format(prog, attrs)
         vao = ctx.vertex_array(prog, [(self._vert_vbo, fmt, attrs)],
                                self._make_tria_vbo(ctx))
@@ -62,7 +64,7 @@ class MeshCheckWindow(window.Window):
             self._camera_controller.update_drag(event.pos)
 
     def initialize(self, ctx):
-        shader_code = shader.ShaderCode.load('basic')
+        shader_code = shader.ShaderCode.load('default')
         self._prog = shader_code.create_program(ctx)
         self._mvp = self._prog.uniforms['mvp']
 
@@ -71,7 +73,7 @@ class MeshCheckWindow(window.Window):
 
     def render(self, ctx):
         ctx.clear(0.9, 0.9, 0.9)
-        ctx.disable(ModernGL.DEPTH_TEST)
+        ctx.enable(ModernGL.DEPTH_TEST)
         ctx.disable(ModernGL.CULL_FACE)
         self._camera.size = self.size()
         self._mvp.write(to_gl(self._camera.mvp))
@@ -81,8 +83,7 @@ class MeshCheckWindow(window.Window):
 @attr.s
 class Mesh:
     verts = attr.ib()
-    trias = attr.ib()
-    quads = attr.ib()
+    faces = attr.ib()
 
     @classmethod
     def from_file(cls, path):
@@ -91,18 +92,7 @@ class Mesh:
 
     @classmethod
     def from_json(cls, obj):
-        verts = obj['verts']
-        trias = {}
-        quads = {}
-        for key, val in obj['faces'].items():
-            if len(val) == 3:
-                trias[key] = val
-            elif len(val) == 4:
-                quads[key] = val
-            else:
-                raise NotImplementedError(
-                    'only triangles and quads are allowed')
-        return cls(verts=verts, trias=trias, quads=quads)
+        return cls(verts=obj['verts'], faces=obj['faces'])
 
 
 def parse_args():

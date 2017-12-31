@@ -18,9 +18,11 @@ class ShaderError(RuntimeError):
 @attr.s(frozen=True, slots=True)
 class ShaderCode:
     """Shader code loader."""
-    vert = attr.ib(default=None)
-    geom = attr.ib(default=None)
     frag = attr.ib(default=None)
+    geom = attr.ib(default=None)
+    tess_ctrl = attr.ib(default=None)
+    tess_eval = attr.ib(default=None)
+    vert = attr.ib(default=None)
 
     @classmethod
     def load(cls, base_name):
@@ -51,9 +53,11 @@ class ShaderCode:
     def create_shader(self, ctx, kind):
         """Create a ModernGL shader."""
         funcs = {
-            'vert': 'vertex_shader',
             'frag': 'fragment_shader',
             'geom': 'geometry_shader',
+            'tess_ctrl': 'tess_control_shader',
+            'tess_eval': 'tess_evaluation_shader',
+            'vert': 'vertex_shader',
         }
         func = getattr(ctx, funcs[kind])
         code = getattr(self, kind)
