@@ -7,7 +7,8 @@ developing mesh modeling tools.
 
 ## Usage
 
-    pipenv run python -m meshcheck [filename]
+    pip3 install --user meshcheck
+    meshcheck [filename]
 
 Input can be passed in either as a file path or via stdin.
 
@@ -46,4 +47,3 @@ If you see an error like this:
 Then try upgrading `setuptools` and `wheel`:
 
     pip3 install --user --upgrade setuptools wheel
-
