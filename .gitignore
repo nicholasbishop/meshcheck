@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+meshcheck.egg-info/
+build/
+dist/
