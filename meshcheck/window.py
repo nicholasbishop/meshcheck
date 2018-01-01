@@ -16,6 +16,7 @@ class Window:
 
         glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, gl_version[0])
         glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, gl_version[1])
+        glfw.window_hint(glfw.DOUBLEBUFFER, True)
         self._wnd = glfw.create_window(*size, title, None, None)
         if not self._wnd:
             raise WindowError('glfw.create_window failed')
