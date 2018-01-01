@@ -84,8 +84,9 @@ class MeshCheckWindow(window.Window):
             for key, face in self._mesh.faces.items()
         ]
 
-        self._vert_vbo = self._make_vert_vbo(ctx)
-        self._tria_vao = self._make_tria_vao(ctx, self._prog)
+        if self._mesh.faces:
+            self._vert_vbo = self._make_vert_vbo(ctx)
+            self._tria_vao = self._make_tria_vao(ctx, self._prog)
 
     def render(self, ctx):
         ctx.clear(0.9, 0.9, 0.9)
@@ -94,7 +95,8 @@ class MeshCheckWindow(window.Window):
         ctx.disable(ModernGL.CULL_FACE)
         self._camera.size = self.size()
         self._mvp.write(util.to_gl(self._camera.mvp))
-        self._tria_vao.render()
+        if self._tria_vao:
+            self._tria_vao.render()
         for text_node in self._text_nodes:
             text_node.render(self._camera.proj, self._camera.model_view)
 
@@ -115,7 +117,7 @@ class Mesh:
 
     @classmethod
     def from_json(cls, obj):
-        return cls(verts=obj['verts'], faces=obj['faces'])
+        return cls(verts=obj.get('verts', {}), faces=obj.get('faces', {}))
 
 
 def parse_args():
