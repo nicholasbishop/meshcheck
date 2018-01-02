@@ -40,17 +40,17 @@ def render(text):
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     ctx = cairo.Context(surface)
 
-    # Clear background
+    # Clear background alpha
     ctx.set_operator(cairo.OPERATOR_SOURCE)
-    ctx.set_source_rgba(0.0, 0.0, 0.0, 0.0)
+    ctx.set_source_rgba(1.0, 1.0, 1.0, 0.0)
     ctx.paint()
 
-    ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+    ctx.set_source_rgba(1.0, 1.0, 1.0, 1.0)
 
     layout = create_layout(ctx, text)
     PangoCairo.show_layout(ctx, layout)
 
-    ctx.set_source_rgba(1.0, 0.7, 0.8, 1.0)
+    ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0)
 
     ctx.translate(-1, -1)
     PangoCairo.update_layout(ctx, layout)

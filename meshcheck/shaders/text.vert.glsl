@@ -9,7 +9,7 @@ uniform vec2 size;
 
 void main() {
   vert_uv = uv;
-  vec2 scaled_size = size * 0.01;
+  vec2 scaled_size = size * 0.005;
   vec2 offset_pos = pos - 0.5;
   mat4 billboard = model_view;
   for (int i = 0; i < 3; i++) {
