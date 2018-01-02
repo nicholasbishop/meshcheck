@@ -6,7 +6,7 @@ pylint meshcheck
 
 [package]
 # Clear out existing packages first
-[nofail] rm -r dist
+[nofail] rm -r dist build
 ./setup.py sdist bdist_wheel
 
 [bump-minor deps(format lint)]
